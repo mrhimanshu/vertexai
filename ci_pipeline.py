@@ -28,7 +28,6 @@ PIPELINE_ROOT = "gs://vertextesting/pipeline_root"
 
 # %%
 import kfp
-import requests
 from typing import NamedTuple
 from google.cloud import storage
 from google.cloud import aiplatform
@@ -102,7 +101,6 @@ def train_xgb(
     from xgboost import XGBClassifier
     import xgboost as xgb
     import pandas as pd
-    from joblib import dump
     
     data = pd.read_csv(dataset.path)
     print(data.columns)
