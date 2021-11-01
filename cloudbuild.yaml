@@ -17,6 +17,7 @@ steps:
     waitFor: ['compile']
 
   # Run pipeline
- - name: 'gcr.io/cloud-builders/gcloud'
+  - name: 'gcr.io/cloud-builders/gcloud'
+    #entrypoint: /bin/sh
     args: ['pubsub', 'topics', 'publish', 'cicdtesting', '--message', 'hello']
     id:  'run'
