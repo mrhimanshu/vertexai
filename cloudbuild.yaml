@@ -15,8 +15,3 @@ steps:
     args: ['cp', 'xgb_pipe.json', 'gs://datasetfiles']
     id:  'upload'
     waitFor: ['compile']
-
-# Run pipeline
- - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    args: ['gcloud','pubsub', 'topics', 'publish','cicdtesting','--message','hello']
-    id:  'run'
