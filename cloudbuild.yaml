@@ -17,6 +17,6 @@ steps:
     waitFor: ['compile']
 
 # Run pipeline
- - name: 'gcr.io/cloud-builders/gcloud'
+ - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     args: ['gcloud','pubsub', 'topics', 'publish','cicdtesting','--message','hello']
     id:  'run'
