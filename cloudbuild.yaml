@@ -18,5 +18,5 @@ steps:
 
 # Run pipeline
  - name: 'gcr.io/cloud-builders/gcloud'
-    args: ['pubsub', 'topics', 'publish','cicdtesting','--message','']
+    args: ['pubsub', 'topics', 'publish','cicdtesting','--message','hello']
     id:  'run'
