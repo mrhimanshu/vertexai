@@ -15,3 +15,8 @@ steps:
     args: ['cp', 'xgb_pipe.json', 'gs://datasetfiles']
     id:  'upload'
     waitFor: ['compile']
+
+  # Run pipeline
+ - name: 'gcr.io/cloud-builders/gcloud'
+    args: ['pubsub', 'topics', 'publish', 'cicdtesting', '--message', 'hello']
+    id:  'run'
