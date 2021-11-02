@@ -262,6 +262,7 @@ def eval_xgboost(
     
     data = pd.read_csv(test_set.path)
     xgmodel = XGBClassifier()
+    #Loading model
     xgmodel.load_model(xgb_model.path + ".bst")
     
     # score = model.score(
