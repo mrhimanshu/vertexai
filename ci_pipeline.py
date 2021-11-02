@@ -390,7 +390,7 @@ def pipeline(
         test_set=dataset_op.outputs["dataset_test"],
         xgb_model=train_op.outputs["model"]
     ).after(train_op)
-    
+    #pipline
     deploy_task = deploy_model(
         model=eval_op.outputs["model"],
         model_knn = eval_knn.outputs['model'],
