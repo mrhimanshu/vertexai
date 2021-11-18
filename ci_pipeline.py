@@ -380,6 +380,7 @@ def pipeline(
         xgb_model=train_op.outputs["model"]
     ).after(train_op)
     
+    #Deploying both model for canary deployment
     deploy_task = deploy_model(
             model=eval_op.outputs["model"],
             model_knn = eval_knn.outputs['model'],
