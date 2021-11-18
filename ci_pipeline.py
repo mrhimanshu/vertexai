@@ -201,7 +201,7 @@ def eval_nn(
     from sklearn.neighbors import KNeighborsClassifier
     import pandas as pd
     from joblib import load, dump
-    
+    # reading dataset
     data = pd.read_csv(test_set.path)
 
     model_knn = load(knn_model.path + ".joblib")
