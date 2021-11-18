@@ -110,7 +110,7 @@ def train_xgb(
     )
     
     xgmodel.fit(
-        data.drop(columns=["target","Unnamed: 0"]).values,
+        data.drop(columns=["target","Unnamed: 0","Unnamed: 0.1"]).values,
         data.target.values,
     )
 
@@ -141,7 +141,7 @@ def grid_search(
 
     gs = GridSearchCV( KNeighborsClassifier(), grid_params, verbose=1, cv =3, n_jobs= -1)
 
-    result = gs.fit(data.drop(columns=["target","Unnamed: 0"]).values,data.target.values)
+    result = gs.fit(data.drop(columns=["target","Unnamed: 0","Unnamed: 0.1"]).values,data.target.values)
 
     m = result.best_params_['metric']
     n_n = result.best_params_['n_neighbors']
@@ -176,9 +176,8 @@ def train_KNN(
 
     knn_model=KNeighborsClassifier(metric=m, n_neighbors=n_n, weights=w) 
     
-    knn_model.fit(data.drop(columns=["target","Unnamed: 0"]).values,data.target.values)
+    knn_model.fit(data.drop(columns=["target","Unnamed: 0","Unnamed: 0.1"]).values,data.target.values)
 
-    
     dump(knn_model, model.path + ".joblib")
 
 
@@ -209,7 +208,7 @@ def eval_nn(
     
     from sklearn.metrics import roc_curve
     
-    y_scores =  model_knn.predict_proba(data.drop(columns=["target","Unnamed: 0"]))[:, 1]
+    y_scores =  model_knn.predict_proba(data.drop(columns=["target","Unnamed: 0","Unnamed: 0.1"]))[:, 1]
     
     fpr, tpr, thresholds = roc_curve(
          y_true=data.target.to_numpy(), y_score=y_scores, pos_label=True
@@ -217,7 +216,7 @@ def eval_nn(
     metrics.log_roc_curve(fpr.tolist(), tpr.tolist(), thresholds.tolist())
     
     from sklearn.metrics import confusion_matrix
-    y_pred = model_knn.predict(data.drop(columns=["target","Unnamed: 0"]))
+    y_pred = model_knn.predict(data.drop(columns=["target","Unnamed: 0","Unnamed: 0.1"]))
     
     metrics.log_confusion_matrix(
        ['Iris-setosa', 'Iris-versicolor', 'Iris-virginica'],
@@ -228,7 +227,7 @@ def eval_nn(
     
     from sklearn.metrics import precision_score, recall_score, accuracy_score
     
-    preds = model_knn.predict(data.drop(columns=["target","Unnamed: 0"]))
+    preds = model_knn.predict(data.drop(columns=["target","Unnamed: 0","Unnamed: 0.1"]))
 
     smetrics.log_metric("Precision KNN",precision_score(data['target'],preds, average='macro'))
     smetrics.log_metric("Recall KNN",recall_score(data['target'],preds, average='macro'))
@@ -264,7 +263,7 @@ def eval_xgboost(
     
     from sklearn.metrics import roc_curve
     
-    y_scores =  xgmodel.predict_proba(data.drop(columns=["target","Unnamed: 0"]))[:, 1]
+    y_scores =  xgmodel.predict_proba(data.drop(columns=["target","Unnamed: 0","Unnamed: 0.1"]))[:, 1]
     
     fpr, tpr, thresholds = roc_curve(
          y_true=data.target.to_numpy(), y_score=y_scores, pos_label=True
@@ -272,7 +271,7 @@ def eval_xgboost(
     metrics.log_roc_curve(fpr.tolist(), tpr.tolist(), thresholds.tolist())
     
     from sklearn.metrics import confusion_matrix
-    y_pred = xgmodel.predict(data.drop(columns=["target","Unnamed: 0"]))
+    y_pred = xgmodel.predict(data.drop(columns=["target","Unnamed: 0","Unnamed: 0.1"]))
     
     metrics.log_confusion_matrix(
        ['Iris-setosa', 'Iris-versicolor', 'Iris-virginica'],
@@ -283,7 +282,7 @@ def eval_xgboost(
     
     from sklearn.metrics import precision_score, recall_score, accuracy_score
     
-    preds = xgmodel.predict(data.drop(columns=["target","Unnamed: 0"]))
+    preds = xgmodel.predict(data.drop(columns=["target","Unnamed: 0","Unnamed: 0.1"]))
 
     smetrics.log_metric("Precision",precision_score(data['target'],preds, average='macro'))
     smetrics.log_metric("Recall",recall_score(data['target'],preds, average='macro'))
