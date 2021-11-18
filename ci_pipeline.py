@@ -17,6 +17,7 @@ from google_cloud_pipeline_components import aiplatform as gcc_aip
 from kfp.v2 import dsl
 from kfp.v2.dsl import (Artifact,
                         Dataset,
+                        HTML,
                         Input,
                         InputPath,
                         Model,
@@ -32,28 +33,37 @@ from kfp.v2.google import experimental
 from kfp.v2.google.client import AIPlatformClient
 
 
+
 @component(
     packages_to_install = [
         "pandas",
-        "sklearn"
+        "sklearn",
+        "psutil",
+        "neptune-client"
     ],
-    base_image="python:3.9"
+    base_image="python:3.9",
+    output_component_file="getting_dataset.yaml"
 )
 def get_data(
     dataset_train: Output[Dataset],
-    dataset_test: Output[Dataset]
-    
+    dataset_test: Output[Dataset],
+    transormed_data:Output[Dataset],
+    EDA:Output[HTML]
 ):
     
     from sklearn import datasets
     from sklearn.model_selection import train_test_split as tts
     import pandas as pd
-    # import some data to play with
+    import neptune.new as neptune
+
+    run = neptune.init(project='alekhya14.lavu/Iris', api_token="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJlNzIxYTRmOS1lODYxLTQzZGQtOWIxZi0wZjEyZDAzMDRkODEifQ==", run="IR-1")
     
-    # data_raw = datasets.load_breast_cancer()
-    data_raw = datasets.load_iris()
-    data = pd.DataFrame(data_raw.data, columns=data_raw.feature_names)
-    data["target"] = data_raw.target
+
+    run["processed_dataset"].download(destination=transormed_data.path)
+    run["EDA_report"].download(destination=EDA.path)
+    run.stop()
+
+    data = pd.read_csv(transormed_data.path)
     
     train, test = tts(data, test_size=0.3)
     train.to_csv(dataset_train.path)
@@ -66,7 +76,9 @@ def get_data(
         "pandas",
         "sklearn",
         "xgboost",
-        "joblib"
+        "joblib",
+        "psutil",
+        "neptune-client"
     ],
     base_image="python:3.9"
 )
@@ -80,25 +92,27 @@ def train_xgb(
     import xgboost as xgb
     import pandas as pd
     from joblib import dump
+    import neptune.new as neptune
     
     data = pd.read_csv(dataset.path)
-    print(data.columns)
-    #data_numpy = data.to_numpy()
-    #print("Numpy Data")
-    #print(data_numpy)
+    
+    run_1 = neptune.init(project='alekhya14.lavu/Iris', api_token="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJlNzIxYTRmOS1lODYxLTQzZGQtOWIxZi0wZjEyZDAzMDRkODEifQ==", run="IR-2")
+    
+    a=run_1["best/params"].fetch()
 
     xgmodel = XGBClassifier(
         objective="multi:softmax",
-        use_label_encoder=False
+        use_label_encoder=False,
+        gamma = a['gamma'],
+        learning_rate = a['learning_rate'],
+        max_depth = a['max_depth'],
+        n_estimators = a['n_estimators']
     )
-
-    #target_val = data.target.astype('category')
     
     xgmodel.fit(
         data.drop(columns=["target","Unnamed: 0"]).values,
         data.target.values,
     )
-    #dump(xgmodel, model.path + ".joblib")
 
     xgmodel.save_model(model.path + ".bst")
 
@@ -136,7 +150,6 @@ def grid_search(
     print(m,n_n,w)
     return(m,n_n,w)
 
-    #xgmodel.save_model(model.path + ".bst")
 
 
 @component(
@@ -160,20 +173,14 @@ def train_KNN(
     from joblib import dump
     
     data = pd.read_csv(dataset.path)
-    print(data.columns)
-    #data_numpy = data.to_numpy()
-    #print("Numpy Data")
-    #print(data_numpy)
 
     knn_model=KNeighborsClassifier(metric=m, n_neighbors=n_n, weights=w) 
     
     knn_model.fit(data.drop(columns=["target","Unnamed: 0"]).values,data.target.values)
 
-    #target_val = data.target.astype('category')
     
     dump(knn_model, model.path + ".joblib")
 
-    #xgmodel.save_model(model.path + ".bst")
 
 
 @component(
@@ -191,27 +198,19 @@ def eval_nn(
     smetrics: Output[Metrics],
     model: Output[Model]
 ):
+
     from sklearn.neighbors import KNeighborsClassifier
     import pandas as pd
     from joblib import load, dump
     
     data = pd.read_csv(test_set.path)
 
-    #model = KNeighborsClassifier()
-
     model_knn = load(knn_model.path + ".joblib")
     
-    # score = model.score(
-    #     data.drop(columns=["target"]),
-    #     data.target,
-    # )
-    print("printing data")
-    print(data.head(2))
     from sklearn.metrics import roc_curve
     
     y_scores =  model_knn.predict_proba(data.drop(columns=["target","Unnamed: 0"]))[:, 1]
-    print("y score ")
-    print(y_scores)
+    
     fpr, tpr, thresholds = roc_curve(
          y_true=data.target.to_numpy(), y_score=y_scores, pos_label=True
     )
@@ -238,7 +237,6 @@ def eval_nn(
     model.metadata["test_score"] = float(accuracy_score(data['target'],preds))
 
     dump(model_knn, model.path + ".joblib")
-    #model.save_model("gs://vertextesting/pipeline_root/model")
 
 
 
@@ -262,20 +260,12 @@ def eval_xgboost(
     
     data = pd.read_csv(test_set.path)
     xgmodel = XGBClassifier()
-    #Loading model
     xgmodel.load_model(xgb_model.path + ".bst")
     
-    # score = model.score(
-    #     data.drop(columns=["target"]),
-    #     data.target,
-    # )
-    print("printing data")
-    print(data.head(2))
     from sklearn.metrics import roc_curve
     
     y_scores =  xgmodel.predict_proba(data.drop(columns=["target","Unnamed: 0"]))[:, 1]
-    print("y score ")
-    print(y_scores)
+    
     fpr, tpr, thresholds = roc_curve(
          y_true=data.target.to_numpy(), y_score=y_scores, pos_label=True
     )
@@ -302,7 +292,6 @@ def eval_xgboost(
     model.metadata["test_score"] = float(accuracy_score(data['target'],preds))
 
     xgmodel.save_model(model.path + ".bst")
-    #model.save_model("gs://vertextesting/pipeline_root/model")
 
 
 
@@ -390,13 +379,13 @@ def pipeline(
         test_set=dataset_op.outputs["dataset_test"],
         xgb_model=train_op.outputs["model"]
     ).after(train_op)
-    #pipline
+    
     deploy_task = deploy_model(
-        model=eval_op.outputs["model"],
-        model_knn = eval_knn.outputs['model'],
-        project=project,
-        region=region
-    )
-
+            model=eval_op.outputs["model"],
+            model_knn = eval_knn.outputs['model'],
+            project=project,
+            region=region
+        )
+        
 if __name__ == '__main__':
     compiler.Compiler().compile(pipeline_func=pipeline, package_path='xgb_pipe.json')
