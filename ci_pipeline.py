@@ -201,7 +201,7 @@ def eval_nn(
     from sklearn.neighbors import KNeighborsClassifier
     import pandas as pd
     from joblib import load, dump
-    # reading dataset
+    
     data = pd.read_csv(test_set.path)
 
     model_knn = load(knn_model.path + ".joblib")
@@ -379,7 +379,7 @@ def pipeline(
         xgb_model=train_op.outputs["model"]
     ).after(train_op)
     
-    #Deploying both model for deployment
+    #Deploying both model for deployment...
     deploy_task = deploy_model(
             model=eval_op.outputs["model"],
             model_knn = eval_knn.outputs['model'],
