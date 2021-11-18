@@ -12,11 +12,11 @@ steps:
 
   # Upload compiled pipeline to GCS.
   - name: 'gcr.io/cloud-builders/gsutil'
-    args: ['cp', 'xgb_pipe.json', 'gs://datasetfiles']
+    args: ['cp', 'xgb_pipe.json', 'gs://irisdatasetartifact/kubeflowpipeline']
     id:  'upload'
     waitFor: ['compile']
 
   # Run pipeline
   - name: 'gcr.io/cloud-builders/gcloud'
-    args: ['pubsub', 'topics', 'publish', 'cicdtesting', '--message', 'hello']
+    args: ['pubsub', 'topics', 'publish', 'vertextesting', '--message', 'hello']
     id:  'run'
