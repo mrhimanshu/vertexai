@@ -1,7 +1,7 @@
 
-PROJECT_ID = "vertextesting-332513"
+PROJECT_ID = "vertexmlmodel"
 REGION = "us-central1" #though us-central is cheaper
-PIPELINE_ROOT = "gs://irisdatasetartifact/pipeline_root"
+PIPELINE_ROOT = "gs://artifactpipeline/pipeline_root"
 
 
 
