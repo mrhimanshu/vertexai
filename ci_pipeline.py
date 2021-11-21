@@ -114,6 +114,11 @@ def train_xgb(
         data.target.values,
     )
 
+    model.metadata["gamma"] = float(a['gamma'])
+    model.metadata["learning_rate"] = float(a['learning_rate'])
+    model.metadata["max_depth"] = int(a['max_depth'])
+    model.metadata["n_estimators"] = int(a['n_estimators'])
+
     xgmodel.save_model(model.path + ".bst")
 
 
@@ -321,8 +326,8 @@ def deploy_model(
         display_name="XGBoost_Model",
         #artifact_uri = b,
         artifact_uri = model.uri.replace("model", ""),
-        serving_container_image_uri="us-docker.pkg.dev/vertex-ai/prediction/xgboost-cpu.1-4:latest"
-        
+        serving_container_image_uri="us-docker.pkg.dev/vertex-ai/prediction/xgboost-cpu.1-4:latest",
+        description = "1st version - Iris"
     )
 
     main_endpoint= aiplatform.Endpoint.create(display_name="him",)
@@ -334,11 +339,12 @@ def deploy_model(
     ##Getting model endpoint id
     deployed_model_id = endpoint.list_models()[0].id
 
-    #Uploading KNN model....
+    #Uploading KNN model.....
     deployed_model_knn = aiplatform.Model.upload(
         display_name="KNN_Model",
         artifact_uri = model_knn.uri.replace("model", ""),
-        serving_container_image_uri="us-docker.pkg.dev/vertex-ai/prediction/sklearn-cpu.0-24:latest"
+        serving_container_image_uri="us-docker.pkg.dev/vertex-ai/prediction/sklearn-cpu.0-24:latest",
+        description = "1st version - Iris"
     )
     endpoint_two = deployed_model_knn.deploy(machine_type="n1-standard-2", endpoint=main_endpoint, traffic_split={"0":60,deployed_model_id:40})
     endpoint_two.wait()
