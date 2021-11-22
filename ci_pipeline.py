@@ -339,7 +339,7 @@ def deploy_model(
     ##Getting model endpoint id
     deployed_model_id = endpoint.list_models()[0].id
 
-    #Uploading KNN model.....
+    #Uploading KNN model...
     deployed_model_knn = aiplatform.Model.upload(
         display_name="KNN_Model",
         artifact_uri = model_knn.uri.replace("model", ""),
