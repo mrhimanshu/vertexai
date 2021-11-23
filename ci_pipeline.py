@@ -27,7 +27,7 @@ from kfp.v2.dsl import (Artifact,
                         ClassificationMetrics,
                         component
                         )
-
+#
 from kfp.v2 import compiler
 from kfp.v2.google import experimental
 from kfp.v2.google.client import AIPlatformClient
@@ -321,7 +321,7 @@ def deploy_model(
     print("Model_path"+b)
     #model.uri.replace("model", "model.joblib")
 
-    #Uploading XGBoost model....
+    #Uploading XGBoost model..
     deployed_model = aiplatform.Model.upload(
         display_name="XGBoost_Model",
         #artifact_uri = b,
