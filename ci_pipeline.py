@@ -64,7 +64,7 @@ def get_data(
     run.stop()
 
     data = pd.read_csv(transormed_data.path)
-    
+    print(data.columns)
     train, test = tts(data, test_size=0.3)
     train.to_csv(dataset_train.path)
     test.to_csv(dataset_test.path)
@@ -368,12 +368,12 @@ def pipeline(
 
     grid = grid_search(dataset_op.outputs["dataset_train"]).after(dataset_op)
 
-    k_nn = train_KNN(
+    k_nn = (train_KNN(
         dataset = dataset_op.outputs["dataset_train"],
         m = grid.outputs["m"],
         n_n = grid.outputs["n_n"],
         w = grid.outputs["w"] 
-    ).after(grid)
+    ).set_cpu_limit('1').set_memory_limit('16').add_node_selector_constraint('cloud.google.com/gke-accelerator', 'nvidia-tesla-k80').set_gpu_limit(2)).after(grid)
 
     eval_knn = eval_nn(test_set=dataset_op.outputs["dataset_test"], knn_model=k_nn.outputs["model"]).after(k_nn)
 
