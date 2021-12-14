@@ -332,8 +332,7 @@ def deploy_model(
 
     main_endpoint= aiplatform.Endpoint.create(display_name="him",)
     
-    #endpoint = deployed_model.deploy(machine_type="n1-standard-2", endpoint=main_endpoint, endpoint=main_endpoint, min_replica_count=1, max_replica_count=2)
-    endpoint = deployed_model.deploy(machine_type="n1-standard-2", endpoint=main_endpoint, endpoint=main_endpoint)
+    endpoint = deployed_model.deploy(machine_type="n1-standard-2", endpoint=main_endpoint, min_replica_count=1, max_replica_count=2)
     endpoint.wait()
     
     ##Getting model endpoint id
