@@ -4,7 +4,6 @@ REGION = "us-central1" #though us-central is cheaper
 PIPELINE_ROOT = "gs://artifactpipeline/pipeline_root"
 
 
-
 import kfp
 import requests
 from typing import NamedTuple
@@ -57,7 +56,6 @@ def get_data(
     import neptune.new as neptune
 
     run = neptune.init(project='alekhya14.lavu/Iris', api_token="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJlNzIxYTRmOS1lODYxLTQzZGQtOWIxZi0wZjEyZDAzMDRkODEifQ==", run="IR-1")
-    
 
     run["processed_dataset"].download(destination=transormed_data.path)
     run["EDA_report"].download(destination=EDA.path)
@@ -332,7 +330,7 @@ def deploy_model(
 
     main_endpoint= aiplatform.Endpoint.create(display_name="him",)
     
-    endpoint = deployed_model.deploy(machine_type="n1-standard-2", endpoint=main_endpoint, min_replica_count=1, max_replica_count=2)
+    endpoint = deployed_model.deploy(machine_type="n1-standard-2", endpoint=main_endpoint, min_replica_count=1, max_replica_count=3)
     endpoint.wait()
     
     ##Getting model endpoint id
@@ -368,16 +366,18 @@ def pipeline(
 
     grid = grid_search(dataset_op.outputs["dataset_train"]).after(dataset_op)
 
-    k_nn = (train_KNN(
+    k_nn = train_KNN(
         dataset = dataset_op.outputs["dataset_train"],
         m = grid.outputs["m"],
         n_n = grid.outputs["n_n"],
         w = grid.outputs["w"] 
-    ).set_cpu_limit('1').set_memory_limit('16').add_node_selector_constraint('cloud.google.com/gke-accelerator', 'nvidia-tesla-k80').set_gpu_limit(2)).after(grid)
+    ).after(grid)
 
     eval_knn = eval_nn(test_set=dataset_op.outputs["dataset_test"], knn_model=k_nn.outputs["model"]).after(k_nn)
 
-    train_op = train_xgb(dataset_op.outputs["dataset_train"]).after(dataset_op)
+    train_op = (train_xgb(
+        dataset_op.outputs["dataset_train"]
+        ).set_cpu_limit('1').set_memory_limit('16').add_node_selector_constraint('cloud.google.com/gke-accelerator', 'nvidia-tesla-k80').set_gpu_limit(2)).after(dataset_op)
     
     eval_op = eval_xgboost(
         test_set=dataset_op.outputs["dataset_test"],
