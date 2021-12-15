@@ -391,6 +391,6 @@ def pipeline(
             project=project,
             region=region
         )
-        
+    #end    
 if __name__ == '__main__':
     compiler.Compiler().compile(pipeline_func=pipeline, package_path='xgb_pipe.json')
