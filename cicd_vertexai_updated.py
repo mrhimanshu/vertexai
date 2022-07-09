@@ -18,9 +18,9 @@ from kfp.v2.dsl import (Artifact,
                         component)
 
 from kfp.v2 import compiler
-from google.cloud import bigquery
-from google.cloud import aiplatform
-from google.cloud.aiplatform import pipeline_jobs
+# from google.cloud import bigquery
+# from google.cloud import aiplatform
+# from google.cloud.aiplatform import pipeline_jobs
 
 # %%
 @component(
