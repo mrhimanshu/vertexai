@@ -7,16 +7,16 @@ steps:
   # Compile pipeline
   - name: 'python'
     entrypoint: 'python'
-    args: ['ci_pipeline.py']
+    args: ['cicd_vertexai_updated.py']
     id: 'compile'
 
   # Upload compiled pipeline to GCS.
   - name: 'gcr.io/cloud-builders/gsutil'
-    args: ['cp', 'xgb_pipe.json', 'gs://pipelinefinal']
+    args: ['cp', 'xgb_pipe.json', 'gs://vertextestingpipeline/compiledpipeline']
     id:  'upload'
     waitFor: ['compile']
 
   # Run pipeline
   - name: 'gcr.io/cloud-builders/gcloud'
-    args: ['pubsub', 'topics', 'publish', 'vertextesting', '--message', 'hello']
+    args: ['pubsub', 'topics', 'publish', 'vertexmessage', '--message', 'hello']
     id:  'run'

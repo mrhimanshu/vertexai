@@ -1,4 +1,6 @@
-google_cloud_pipeline_components==0.1.7
-ipython==7.29.0
-kfp==1.8.7
-kfp_pipeline_spec==0.1.13
+kfp==1.8.12
+kfp_pipeline_spec==0.1.16
+pandas==1.4.3
+protobuf==4.21.2
+scikit_learn==1.1.1
+xgboost==1.6.1
