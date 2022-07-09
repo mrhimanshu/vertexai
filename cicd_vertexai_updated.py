@@ -5,7 +5,6 @@ REGION = "us-central1" #though us-central is cheaper
 # through gstutil we access storage
 PIPELINE_ROOT = "gs://vertextestingpipeline/pipeline_root"
 
-# %%
 from typing import NamedTuple
 from kfp.v2 import dsl
 from kfp.v2.dsl import (Artifact,
